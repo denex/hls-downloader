@@ -17,7 +17,18 @@ DOWNLOAD_DIR = None
 
 DESCRIPTION = defaultdict(list)
 
-FILENAME_CHARS_TO_REPLACE = frozenset(['<', '>', ':', '"', '|', '?', '*'])
+FILENAME_CHARS_TO_REPLACE = frozenset(['<', '>', ':', '"', '|', '?', '*', '/', '\\'])
+
+
+def filter_filename_part(string, char_to_replace='_'):
+    """
+    Replace forbidden filename chars to '_' for string
+    :rtype: unicode
+    :type string: unicode
+    :type char_to_replace: unicode
+    """
+    f_part = [(c if c not in FILENAME_CHARS_TO_REPLACE else char_to_replace) for c in string]
+    return ''.join(f_part)
 
 
 def uri_to_filename(absolute_uri):
@@ -25,17 +36,12 @@ def uri_to_filename(absolute_uri):
     :param absolute_uri:
     :return: DOWNLOAD_DIR + hostname + rel_uri with os.path.sep
     """
-    parts = urlparse.urlparse(absolute_uri)
-    rel_filename = os.path.sep.join(parts.path.split('/')[1:])
-    filename = os.path.join(DOWNLOAD_DIR, parts.netloc, rel_filename)
-    norm_name_list = []
-    for c in filename:
-        if c in FILENAME_CHARS_TO_REPLACE:
-            norm_name_list.append('_')
-            continue
-        norm_name_list.append(c)
-    norm_filename = ''.join(norm_name_list)
-    return norm_filename
+    url_parts = urlparse.urlparse(absolute_uri)
+    rel_filename_parts = [url_parts.netloc] + url_parts.path.split('/')[1:]
+    filtered_parts = [filter_filename_part(p) for p in rel_filename_parts]
+    rel_filename = os.path.sep.join(filtered_parts)
+    filename = os.path.join(DOWNLOAD_DIR, rel_filename)
+    return filename
 
 
 Headers = {
@@ -155,16 +161,16 @@ def process_playlist_by_uri(absolute_uri):
     return filename
 
 
-def process_main_playlist(url_to_main_m3u8):
+def process_main_playlist(url_to_m3u8):
     """
     Process main playlist and save it to main.m3u8
     Additional information to description.json
-    :type url_to_main_m3u8: unicode
+    :type url_to_m3u8: unicode
     :rtype: None
     """
-    DESCRIPTION['origin_url'] = url_to_main_m3u8
+    DESCRIPTION['origin_url'] = url_to_m3u8
 
-    main_list_filename = process_playlist_by_uri(url_to_main_m3u8)
+    main_list_filename = process_playlist_by_uri(url_to_m3u8)
 
     for u in DOWNLOADED_FILES_BY_URI:
         DOWNLOADED_FILES_BY_URI[u] = os.path.relpath(DOWNLOADED_FILES_BY_URI[u], DOWNLOAD_DIR)
@@ -182,18 +188,18 @@ def process_main_playlist(url_to_main_m3u8):
         logging.info("Copied %s -> %s", main_list_filename, os.path.join(main_list_dir, 'main.m3u8'))
 
 
-def main(url_to_main_m3u8, destination, verbose):
+def main(url_to_m3u8, download_dir, verbose):
     global DOWNLOAD_DIR
-    DOWNLOAD_DIR = destination
+    DOWNLOAD_DIR = download_dir
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
-    process_main_playlist(url_to_main_m3u8)
+    process_main_playlist(url_to_m3u8)
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('url_to_main_m3u8', help="Url to main.m3u8")
-    parser.add_argument('destination', help="Path to save files")
+    parser.add_argument('url_to_m3u8', help="Url to main.m3u8")
+    parser.add_argument('download_dir', help="Path to save files")
     parser.add_argument('-v', '--verbose', action="store_true", help="Be more verbose")
     kwargs = vars(parser.parse_args())
     return kwargs
