@@ -37,7 +37,7 @@ def uri_to_filename(absolute_uri):
     :return: DOWNLOAD_DIR + hostname + rel_uri with os.path.sep
     """
     url_parts = urlparse.urlparse(absolute_uri)
-    rel_filename_parts = [url_parts.netloc] + url_parts.path.split('/')[1:]
+    rel_filename_parts = [url_parts.netloc] + filter(lambda s: s != '', url_parts.path.split('/')[1:])
     filtered_parts = [filter_filename_part(p) for p in rel_filename_parts]
     rel_filename = os.path.sep.join(filtered_parts)
     filename = os.path.join(DOWNLOAD_DIR, rel_filename)
