@@ -1,0 +1,16 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+
+
+[packages]
+
+"m3u8" = ">=0.3.5"
+python-slugify = ">=1.2.4"
+requests = ">=2.13.0"

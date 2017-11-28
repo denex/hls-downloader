@@ -1,121 +1,26 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, print_function
 
+import os
+import sys
 import argparse
 import codecs
 import json
 import logging
-import os
 import shutil
-import urlparse
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
+
+if sys.version_info.major == 2:
+    import urlparse  # Python 2.x
+else:
+    import urllib.parse as urlparse  # Python 3.x
 
 import m3u8
-import requests
 
+import downloader
 
-DOWNLOAD_DIR = None
+DOWNLOADER = None  # Instance of downloader.Downloader
 
 DESCRIPTION = defaultdict(list)
-
-FILENAME_CHARS_TO_REPLACE = frozenset(['<', '>', ':', '"', '|', '?', '*', '/', '\\'])
-
-
-def filter_filename_part(string, char_to_replace='_'):
-    """
-    Replace forbidden filename chars to '_' for string
-    :rtype: unicode
-    :type string: unicode
-    :type char_to_replace: unicode
-    """
-    f_part = [(c if c not in FILENAME_CHARS_TO_REPLACE else char_to_replace) for c in string]
-    return ''.join(f_part)
-
-
-def uri_to_filename(absolute_uri):
-    """
-    :param absolute_uri:
-    :return: DOWNLOAD_DIR + hostname + rel_uri with os.path.sep
-    """
-    url_parts = urlparse.urlparse(absolute_uri)
-    rel_filename_parts = [url_parts.netloc] + filter(lambda s: s != '', url_parts.path.split('/')[1:])
-    filtered_parts = [filter_filename_part(p) for p in rel_filename_parts]
-    rel_filename = os.path.sep.join(filtered_parts)
-    filename = os.path.join(DOWNLOAD_DIR, rel_filename)
-    return filename
-
-
-Headers = {
-    'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.8"
-}
-
-HTTP_SESSION = requests.session()
-
-
-def is_file_same_size(uri, filename):
-    """
-    Check server size by Content-Length
-    :type uri: unicode
-    :type filename: unicode
-    :rtype: bool
-    """
-    resp = HTTP_SESSION.head(uri, headers=Headers)
-    header_size_str = resp.headers.get('Content-Length')
-    if header_size_str is None:
-        logging.warning("No 'Content-Length' header for %s", uri)
-        return False
-    uri_size = int(header_size_str)
-
-    file_size = os.path.getsize(filename)
-    return (uri_size - file_size) == 0
-
-
-def retrieve_uri_to_file(uri, filename):
-    """
-    Download URI to File
-    :type uri: unicode
-    :type filename: unicode
-    :rtype: None
-    """
-    # Downloading
-    try:
-        resp = HTTP_SESSION.get(uri, headers=Headers)
-    except requests.RequestException as e:
-        logging.exception(e)
-        raise e
-    # Write to file
-    with open(filename, 'wb') as fd:
-        for chunk in resp.iter_content(chunk_size=2 ** 20):
-            fd.write(chunk)
-
-
-DOWNLOADED_FILES_BY_URI = OrderedDict()
-
-
-def download_one_file(absolute_uri):
-    """
-    Downloads one file from absolute_uri to DOWNLOAD_DIR + absolute_uri.path
-    if file already exists - skip it
-    :type absolute_uri: unicode
-    :rtype: unicode
-    """
-    filename = uri_to_filename(absolute_uri)
-    if filename == DOWNLOADED_FILES_BY_URI.get(absolute_uri):
-        # In case of #EXT-X-BYTERANGE for same file
-        logging.warning("File %s already downloaded", filename)
-        return filename  # We already downloaded this file in current session
-    if os.path.isfile(filename):
-        if is_file_same_size(absolute_uri, filename):
-            DOWNLOADED_FILES_BY_URI[absolute_uri] = filename
-            logging.warning("File %s already exists and same size", filename)
-            return filename  # Same file already exists
-        logging.warning("File %s and URI %s size mismatch", filename, absolute_uri)
-    dst_dir = os.path.dirname(filename)
-    if not os.path.isdir(dst_dir):
-        os.makedirs(dst_dir)
-    retrieve_uri_to_file(absolute_uri, filename)
-    DOWNLOADED_FILES_BY_URI[absolute_uri] = filename
-    logging.info("Downloaded %s -> %s", absolute_uri, filename)
-    return filename
 
 
 def download_files_from_playlist(m3u8list):
@@ -124,23 +29,30 @@ def download_files_from_playlist(m3u8list):
     :type m3u8list: m3u8.M3U8
     :rtype: None
     """
-    for iframe_playlist in m3u8list.iframe_playlists:
-        if iframe_playlist.absolute_uri:
-            DESCRIPTION['IFRAME-STREAMS'].append(iframe_playlist.absolute_uri)
-            process_playlist_by_uri(iframe_playlist.absolute_uri)
-
     for media in m3u8list.media:
         if media.absolute_uri:
             DESCRIPTION['MEDIA.' + media.type].append(media.absolute_uri)
             process_playlist_by_uri(media.absolute_uri)
 
+    for iframe_playlist in m3u8list.iframe_playlists:
+        if iframe_playlist.absolute_uri:
+            DESCRIPTION['IFRAME-STREAMS'].append(iframe_playlist.absolute_uri)
+            process_playlist_by_uri(iframe_playlist.absolute_uri)
+
     if m3u8list.playlists:
         for playlist in m3u8list.playlists:
+            if not playlist.absolute_uri.startswith(playlist.base_uri):
+                logging.warning("Base URI changed from %s to %s", playlist.base_uri, playlist.absolute_uri)
             process_playlist_by_uri(playlist.absolute_uri)
         return
     assert m3u8list.is_endlist, "Only VOD Playlist supported"
+    segment_map_absolute_url = None
+    if m3u8list.segment_map:
+        segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map['uri'])
+    if segment_map_absolute_url:
+        DOWNLOADER.download_one_file(segment_map_absolute_url)
     for segment in m3u8list.segments:
-        download_one_file(segment.absolute_uri)
+        DOWNLOADER.download_one_file(segment.absolute_uri)
 
 
 def process_playlist_by_uri(absolute_uri):
@@ -150,7 +62,7 @@ def process_playlist_by_uri(absolute_uri):
     :return: Filename of downloaded Playlist
     :rtype: unicode
     """
-    filename = download_one_file(absolute_uri)
+    filename = DOWNLOADER.download_one_file(absolute_uri)
     base_uri = '/'.join(absolute_uri.split('/')[:-1]) + '/'
 
     with codecs.open(filename, mode='rb', encoding='utf-8') as pl_f:
@@ -172,9 +84,10 @@ def process_main_playlist(url_to_m3u8):
 
     main_list_filename = process_playlist_by_uri(url_to_m3u8)
 
-    for u in DOWNLOADED_FILES_BY_URI:
-        DOWNLOADED_FILES_BY_URI[u] = os.path.relpath(DOWNLOADED_FILES_BY_URI[u], DOWNLOAD_DIR)
-    DESCRIPTION['Files'] = DOWNLOADED_FILES_BY_URI
+    downloaded_files = DOWNLOADER.downloaded_files_by_url()
+    for u in downloaded_files:
+        downloaded_files[u] = os.path.relpath(downloaded_files[u], DOWNLOADER.download_dir)
+    DESCRIPTION['Files'] = downloaded_files
 
     main_list_dir = os.path.dirname(main_list_filename)
     description_filename = os.path.join(main_list_dir, 'description.json')
@@ -189,14 +102,23 @@ def process_main_playlist(url_to_m3u8):
 
 
 def main(url_to_m3u8, download_dir, verbose):
-    global DOWNLOAD_DIR
-    DOWNLOAD_DIR = download_dir
+    """
+    :type url_to_m3u8: str 
+    :type download_dir: str 
+    :type verbose: bool 
+    :rtype: None 
+    """
+    global DOWNLOADER
+    DOWNLOADER = downloader.Downloader(download_dir=download_dir)
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
     process_main_playlist(url_to_m3u8)
 
 
 def parse_args():
+    """
+    :rtype: dict 
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('url_to_m3u8', help="Url to main.m3u8")
     parser.add_argument('download_dir', help="Path to save files")
