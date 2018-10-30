@@ -11,6 +11,6 @@ name = "pypi"
 
 [packages]
 
-"m3u8" = ">=0.3.5"
-python-slugify = ">=1.2.4"
-requests = ">=2.13.0"
+"m3u8" = ">=0.3.6"
+python-slugify = ">=1.2.6"
+requests = ">=2.20.0"
