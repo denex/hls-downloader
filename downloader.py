@@ -23,7 +23,7 @@ class Downloader:
         :type string: unicode
         :type char_to_replace: unicode
         """
-        result = '.'.join((slugify.slugify(s, separator=char_to_replace) for s in string.split('.')))
+        result = '.'.join((slugify.slugify(s, separator=char_to_replace, lowercase=False) for s in string.split('.')))
         return result
 
     def __init__(self, download_dir):
