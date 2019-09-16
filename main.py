@@ -1,13 +1,13 @@
 from __future__ import division, print_function
 
-import os
-import sys
 import argparse
 import codecs
+from collections import defaultdict
 import json
 import logging
+import os
 import shutil
-from collections import defaultdict
+import sys
 
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
@@ -17,6 +17,11 @@ else:
 import m3u8
 
 import downloader
+
+
+class HlsDownloaderException(Exception):
+    pass
+
 
 DOWNLOADER = None  # Instance of downloader.Downloader
 
@@ -45,7 +50,10 @@ def download_files_from_playlist(m3u8list):
                 logging.warning("Base URI changed from %s to %s", playlist.base_uri, playlist.absolute_uri)
             process_playlist_by_uri(playlist.absolute_uri)
         return
-    assert m3u8list.is_endlist, "Only VOD Playlist supported"
+
+    if not m3u8list.is_endlist:
+        raise HlsDownloaderException("Only VOD Playlist supported")
+
     segment_map_absolute_url = None
     if m3u8list.segment_map:
         segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map['uri'])
@@ -58,9 +66,9 @@ def download_files_from_playlist(m3u8list):
 def process_playlist_by_uri(absolute_uri):
     """
     Download and process m3u8 playlist
-    :type absolute_uri: unicode
+    :type absolute_uri: Text
     :return: Filename of downloaded Playlist
-    :rtype: unicode
+    :rtype: Text
     """
     filename = DOWNLOADER.download_one_file(absolute_uri)
     base_uri = '/'.join(absolute_uri.split('/')[:-1]) + '/'
@@ -77,7 +85,7 @@ def process_main_playlist(url_to_m3u8):
     """
     Process main playlist and save it to main.m3u8
     Additional information to description.json
-    :type url_to_m3u8: unicode
+    :type url_to_m3u8: Text
     :rtype: None
     """
     DESCRIPTION['origin_url'] = url_to_m3u8
