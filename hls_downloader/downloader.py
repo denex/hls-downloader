@@ -6,13 +6,13 @@ import os
 import re
 import sys
 
+import requests
+import slugify
+
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:
     import urllib.parse as urlparse  # Python 3.x
-
-import requests
-import slugify
 
 
 class Downloader:
@@ -36,13 +36,6 @@ class Downloader:
                           " Version/10.0.3 Safari/602.4.8"
         }
 
-    @property
-    def download_dir(self):
-        return self._download_dir
-
-    def downloaded_files_by_url(self):
-        return self._downloaded_files_by_uri.copy()
-
     def uri_to_filename(self, absolute_uri):
         """
         :param absolute_uri:
@@ -55,7 +48,7 @@ class Downloader:
         filename = os.path.join(self._download_dir, rel_filename)
         return filename
 
-    def url_and_file_size_diff(self, uri, filename):
+    def _url_and_file_size_diff(self, uri, filename):
         """
         Check filename size on server by Content-Length
         :return:
@@ -104,7 +97,7 @@ class Downloader:
             logging.warning("File %s already downloaded", filename)
             return filename  # We already downloaded this file in current session
         if os.path.isfile(filename):
-            size_diff = self.url_and_file_size_diff(absolute_uri, filename)
+            size_diff = self._url_and_file_size_diff(absolute_uri, filename)
             if size_diff == 0:
                 self._downloaded_files_by_uri[absolute_uri] = filename
                 logging.warning("File %s already exists and same size", filename)
@@ -118,12 +111,3 @@ class Downloader:
         self._downloaded_files_by_uri[absolute_uri] = filename
         logging.info("Downloaded %s -> %s", absolute_uri, filename)
         return filename
-
-
-def test():
-    downloader = Downloader(download_dir=".")
-    downloader.download_one_file("http://tungsten.aaplimg.com/VOD/bipbop_adv_example_hevc/master.m3u8")
-
-
-if __name__ == '__main__':
-    test()

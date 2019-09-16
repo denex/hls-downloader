@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 
-import argparse
 import codecs
 from collections import defaultdict
 import json
@@ -16,15 +15,12 @@ else:
 
 import m3u8
 
-import downloader
-
 
 class HlsDownloaderException(Exception):
     pass
 
 
 DOWNLOADER = None  # Instance of downloader.Downloader
-
 DESCRIPTION = defaultdict(list)
 
 
@@ -107,33 +103,3 @@ def process_main_playlist(url_to_m3u8):
     if not os.path.isfile(main_list_copy_filename):
         shutil.copy(main_list_filename, main_list_copy_filename)
         logging.info("Copied %s -> %s", main_list_filename, os.path.join(main_list_dir, 'main.m3u8'))
-
-
-def main(url_to_m3u8, download_dir, verbose):
-    """
-    :type url_to_m3u8: str 
-    :type download_dir: str 
-    :type verbose: bool 
-    :rtype: None 
-    """
-    global DOWNLOADER
-    DOWNLOADER = downloader.Downloader(download_dir=download_dir)
-    logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
-
-    process_main_playlist(url_to_m3u8)
-
-
-def parse_args():
-    """
-    :rtype: dict 
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('url_to_m3u8', help="Url to main.m3u8")
-    parser.add_argument('download_dir', help="Path to save files")
-    parser.add_argument('-v', '--verbose', action="store_true", help="Be more verbose")
-    kwargs = vars(parser.parse_args())
-    return kwargs
-
-
-if __name__ == '__main__':
-    main(**parse_args())

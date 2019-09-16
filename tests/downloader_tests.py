@@ -1,6 +1,6 @@
 import pytest
 
-from downloader import Downloader
+from hls_downloader import Downloader
 
 
 @pytest.mark.parametrize(('part', 'expected'), [
