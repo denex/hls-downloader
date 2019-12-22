@@ -10,8 +10,8 @@ Requirements:
 
 Usage:
 
-```shell
-python main.py http://some.m3u8 /some/dir/for/files/
+```sh
+python main.py 'http://some.m3u8' /some/dir/for/files/
 ```
 
 Known Issues:
