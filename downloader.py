@@ -6,12 +6,15 @@ import os
 import re
 import sys
 
+from session import session_factory
+
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:
     import urllib.parse as urlparse  # Python 3.x
 
 import requests
+# noinspection PyPackageRequirements
 import slugify
 
 
@@ -27,14 +30,10 @@ class Downloader:
         result = slugify.slugify(string, lowercase=False, regex_pattern=allowed_pattern)
         return result
 
-    def __init__(self, download_dir):
+    def __init__(self, download_dir, http_settings=None):
         self._download_dir = download_dir
         self._downloaded_files_by_uri = OrderedDict()
-        self._http_session = requests.session()
-        self._http_headers = {
-            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/602.4.8 (KHTML, like Gecko)"
-                          " Version/10.0.3 Safari/602.4.8"
-        }
+        self._http_session = session_factory(http_settings or {})
 
     @property
     def download_dir(self):
@@ -63,7 +62,7 @@ class Downloader:
         :type filename: Text
         :rtype: int or None
         """
-        resp = self._http_session.head(uri, headers=self._http_headers)
+        resp = self._http_session.head(uri)
         header_size_str = resp.headers.get('Content-Length')
         if header_size_str is None:
             logging.warning("No 'Content-Length' header for %s", uri)
@@ -82,7 +81,7 @@ class Downloader:
         # Downloading
         logging.info("Downloading %s to %s", uri, filename)
         try:
-            resp = self._http_session.get(uri, headers=self._http_headers)
+            resp = self._http_session.get(uri)
         except requests.RequestException as e:
             logging.exception(e)
             raise e
