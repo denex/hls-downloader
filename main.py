@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import division, print_function
 
 import argparse
@@ -51,8 +53,9 @@ def download_files_from_playlist(m3u8list):
             process_playlist_by_uri(playlist.absolute_uri)
         return
 
+    # noinspection PyUnresolvedReferences
     if not m3u8list.is_endlist:
-        raise HlsDownloaderException("Only VOD Playlist supported")
+        raise HlsDownloaderException("Playlist is not endlist. Only VOD Playlists are supported")
 
     segment_map_absolute_url = None
     if m3u8list.segment_map:
@@ -109,15 +112,29 @@ def process_main_playlist(url_to_m3u8):
         logging.info("Copied %s -> %s", main_list_filename, os.path.join(main_list_dir, 'main.m3u8'))
 
 
-def main(url_to_m3u8, download_dir, verbose):
+def main(url_to_m3u8, download_dir, verbose, ignore_ssl):
     """
-    :type url_to_m3u8: str 
-    :type download_dir: str 
-    :type verbose: bool 
-    :rtype: None 
+    :type url_to_m3u8: str
+    :type download_dir: str
+    :type verbose: bool
+    :type ignore_ssl: bool
+    :rtype: None
     """
+    http_settings = dict(
+        headers={
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
+                          " AppleWebKit/602.4.8 (KHTML, like Gecko)"
+                          " Version/10.0.3 Safari/602.4.8"
+        },
+    )
+    if ignore_ssl:
+        http_settings['verify'] = False
+
     global DOWNLOADER
-    DOWNLOADER = downloader.Downloader(download_dir=download_dir)
+    DOWNLOADER = downloader.Downloader(
+        download_dir=download_dir,
+        http_settings=http_settings,
+    )
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
     process_main_playlist(url_to_m3u8)
@@ -125,12 +142,15 @@ def main(url_to_m3u8, download_dir, verbose):
 
 def parse_args():
     """
-    :rtype: dict 
+    :rtype: dict
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('url_to_m3u8', help="Url to main.m3u8")
     parser.add_argument('download_dir', help="Path to save files")
-    parser.add_argument('-v', '--verbose', action="store_true", help="Be more verbose")
+    parser.add_argument('--ignore-ssl', default=False, action='store_true',
+                        help="Ignore SSL verification")
+    parser.add_argument('-v', '--verbose', action="store_true",
+                        help="Be more verbose")
     kwargs = vars(parser.parse_args())
     return kwargs
 
