@@ -14,13 +14,14 @@ else:
     import urllib.parse as urlparse  # Python 3.x
 
 import requests
+
 # noinspection PyPackageRequirements
 import slugify
 
 
 class Downloader:
     @staticmethod
-    def filter_filename_part(string, allowed_pattern=re.compile(r'[^-.@!\w]+', re.IGNORECASE)):
+    def filter_filename_part(string, allowed_pattern=re.compile(r"[^-.@!\w]+", re.IGNORECASE)):
         """
         Replace forbidden filename chars to '_' for string
         :rtype: Text
@@ -48,7 +49,7 @@ class Downloader:
         :return: DOWNLOAD_DIR + hostname + rel_uri with os.path.sep
         """
         url_parts = urlparse.urlparse(absolute_uri)
-        rel_filename_parts = [url_parts.netloc] + [i for i in url_parts.path.split('/')[1:] if i]
+        rel_filename_parts = [url_parts.netloc] + [i for i in url_parts.path.split("/")[1:] if i]
         filtered_parts = [self.filter_filename_part(p) for p in rel_filename_parts]
         rel_filename = os.path.sep.join(filtered_parts)
         filename = os.path.join(self._download_dir, rel_filename)
@@ -63,7 +64,7 @@ class Downloader:
         :rtype: int or None
         """
         resp = self._http_session.head(uri)
-        header_size_str = resp.headers.get('Content-Length')
+        header_size_str = resp.headers.get("Content-Length")
         if header_size_str is None:
             logging.warning("No 'Content-Length' header for %s", uri)
             return None
@@ -86,7 +87,7 @@ class Downloader:
             logging.exception(e)
             raise e
         # Write to file
-        with open(filename, 'wb') as fd:
+        with open(filename, "wb") as fd:
             for chunk in resp.iter_content(chunk_size=2 ** 20):
                 fd.write(chunk)
 
@@ -124,5 +125,5 @@ def test():
     downloader.download_one_file("http://tungsten.aaplimg.com/VOD/bipbop_adv_example_hevc/master.m3u8")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()
