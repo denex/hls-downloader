@@ -24,6 +24,8 @@ from downloader import Downloader
         ("a|b", "a-b"),
         ("a?b", "a-b"),
         ("a*b", "a-b"),
+        # Windows special dirs see https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file
+        # ("CON", "_CON_")
     ],
 )
 def test__filter_filename_part(part, expected):
@@ -36,7 +38,7 @@ def downloader():
 
 
 @pytest.mark.parametrize(
-    ("url", "expected_filename"), [("http://example.com/seq-427.ts", os.path.join(".", "example.com", "seq-427.ts")),]
+    ("url", "expected_filename"), [("http://example.com/seq-427.ts", os.path.join(".", "example.com", "seq-427.ts"))]
 )
 def test__uri_to_filename(url, expected_filename, downloader):
     assert downloader.uri_to_filename(url) == expected_filename
