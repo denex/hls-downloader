@@ -2,6 +2,8 @@
 
 Download all files as is from HLS (HTTP Live Streaming) VoD (Video on Demand) playlist m3u8 from <https://developer.apple.com/streaming/examples/>
 
+![Python application](https://github.com/denex/hls-downloader/workflows/Python%20application/badge.svg)
+
 Requirements:
 
 * m3u8
