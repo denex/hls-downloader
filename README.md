@@ -1,5 +1,4 @@
-hls-downloader
-==============
+# HLS Downloader
 
 Download all files as is from HLS (HTTP Live Streaming) VoD (Video on Demand) playlist m3u8 from <https://developer.apple.com/streaming/examples/>
 
