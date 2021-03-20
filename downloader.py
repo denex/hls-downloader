@@ -1,10 +1,13 @@
 from __future__ import division, print_function
 
-from collections import OrderedDict
+import concurrent.futures
 import logging
 import os
 import re
 import sys
+from collections import OrderedDict
+
+from m3u8 import SegmentList
 
 from session import session_factory
 
@@ -35,6 +38,7 @@ class Downloader:
         self._download_dir = download_dir
         self._downloaded_files_by_uri = OrderedDict()
         self._http_session = session_factory(http_settings or {})
+        self._executor = concurrent.futures.ThreadPoolExecutor()
 
     @property
     def download_dir(self):
@@ -118,6 +122,17 @@ class Downloader:
         self._downloaded_files_by_uri[absolute_uri] = filename
         logging.info("Downloaded %s -> %s", absolute_uri, filename)
         return filename
+
+    def download_many(self, segments: SegmentList):
+        """Downloads many segments and waits for completion"""
+        futures = []
+        for segment in segments:
+            future = self._executor.submit(
+                self.download_one_file, segment.absolute_uri)
+            futures.append(future)
+
+        for future in futures:
+            future.result()
 
 
 def test():
