@@ -6,9 +6,6 @@ import os
 import re
 import sys
 from collections import OrderedDict
-
-from m3u8 import SegmentList
-
 from session import session_factory
 
 if sys.version_info.major == 2:
@@ -123,7 +120,7 @@ class Downloader:
         logging.info("Downloaded %s -> %s", absolute_uri, filename)
         return filename
 
-    def download_many(self, segments: SegmentList):
+    def download_many(self, segments):
         """Downloads many segments and waits for completion"""
         futures = []
         for segment in segments:
