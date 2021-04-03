@@ -4,12 +4,12 @@ from __future__ import division, print_function
 
 import argparse
 import codecs
-from collections import defaultdict
 import json
 import logging
 import os
 import shutil
 import sys
+from collections import defaultdict
 
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
@@ -62,8 +62,8 @@ def download_files_from_playlist(m3u8list):
         segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map["uri"])
     if segment_map_absolute_url:
         DOWNLOADER.download_one_file(segment_map_absolute_url)
-    for segment in m3u8list.segments:
-        DOWNLOADER.download_one_file(segment.absolute_uri)
+
+    DOWNLOADER.download_many(m3u8list.segments)
 
 
 def process_playlist_by_uri(absolute_uri):
