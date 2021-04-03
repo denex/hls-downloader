@@ -1,8 +1,14 @@
-# hls-downloader
+hls-downloader
+==============
 
 Download all files as is from HLS (HTTP Live Streaming) VoD (Video on Demand) playlist m3u8 from <https://developer.apple.com/streaming/examples/>
 
 ![Python application](https://github.com/denex/hls-downloader/workflows/Python%20application/badge.svg)
+
+Python 2 suport
+---------------
+
+Branch python2 should work in Python 2
 
 Requirements:
 
