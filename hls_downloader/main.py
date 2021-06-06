@@ -2,7 +2,6 @@
 
 from __future__ import division, print_function
 
-import argparse
 import codecs
 import json
 import logging
@@ -18,15 +17,12 @@ else:
 
 import m3u8
 
-import downloader
-
 
 class HlsDownloaderException(Exception):
     pass
 
 
 DOWNLOADER = None  # Instance of downloader.Downloader
-
 DESCRIPTION = defaultdict(list)
 
 
