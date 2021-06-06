@@ -11,6 +11,10 @@ import shutil
 import sys
 from collections import defaultdict
 
+import m3u8
+
+from . import downloader
+
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:

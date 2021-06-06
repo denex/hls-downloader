@@ -8,6 +8,9 @@ import sys
 from collections import OrderedDict
 from session import session_factory
 
+import requests
+import slugify
+
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:
