@@ -2,7 +2,6 @@
 
 from __future__ import division, print_function
 
-import argparse
 import codecs
 import json
 import logging
@@ -11,10 +10,6 @@ import shutil
 import sys
 from collections import defaultdict
 
-import m3u8
-
-from . import downloader
-
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:
@@ -22,15 +17,12 @@ else:
 
 import m3u8
 
-import downloader
-
 
 class HlsDownloaderException(Exception):
     pass
 
 
 DOWNLOADER = None  # Instance of downloader.Downloader
-
 DESCRIPTION = defaultdict(list)
 
 
