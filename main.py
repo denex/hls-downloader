@@ -59,7 +59,7 @@ def download_files_from_playlist(m3u8list):
 
     segment_map_absolute_url = None
     if m3u8list.segment_map:
-        segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map["uri"])
+        segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map[0].uri)
     if segment_map_absolute_url:
         DOWNLOADER.download_one_file(segment_map_absolute_url)
 
