@@ -9,7 +9,7 @@ format:
 
 .PHONY: test
 test: clean
-	tox $(SRC)
+	./scripts/test-docker.sh
 
 .PHONY: coverage
 coverage:

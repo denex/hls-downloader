@@ -10,16 +10,18 @@ Python 2 suport
 
 Branch python2 should work in Python 2
 
-Requirements:
+## Install
 
-* m3u8
-* python-slugify
-* requests
+Project dependencies are managed with [uv](https://docs.astral.sh/uv/). Create a virtual environment with the dev tooling by running:
+
+```sh
+uv sync --group dev
+```
 
 Usage:
 
 ```sh
-python main.py 'http://some.m3u8' /some/dir/for/files/
+uv run python main.py 'http://some.m3u8' /some/dir/for/files/
 ```
 
 Known Issues:
