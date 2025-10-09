@@ -385,7 +385,7 @@ wheels = [
 
 [[package]]
 name = "hls-downloader"
-version = "0.1.0"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "m3u8" },

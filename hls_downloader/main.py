@@ -2,6 +2,7 @@
 
 from __future__ import division, print_function
 
+import argparse
 import codecs
 import json
 import logging
@@ -16,6 +17,8 @@ else:
     import urllib.parse as urlparse  # Python 3.x
 
 import m3u8
+
+from . import downloader
 
 
 class HlsDownloaderException(Exception):

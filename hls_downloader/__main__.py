@@ -3,7 +3,7 @@ from __future__ import division, print_function
 import argparse
 import logging
 
-from . import downloader, main
+from . import downloader, main as core_main
 
 
 def module_entry_point(url_to_m3u8, download_dir, verbose):
@@ -13,10 +13,10 @@ def module_entry_point(url_to_m3u8, download_dir, verbose):
     :type verbose: bool
     :rtype: None
     """
-    main.DOWNLOADER = downloader.Downloader(download_dir=download_dir)
+    core_main.DOWNLOADER = downloader.Downloader(download_dir=download_dir)
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
-    main.process_main_playlist(url_to_m3u8)
+    core_main.process_main_playlist(url_to_m3u8)
 
 
 def parse_args():
@@ -31,5 +31,9 @@ def parse_args():
     return kwargs
 
 
-if __name__ == '__main__':
+def main():
     module_entry_point(**parse_args())
+
+
+if __name__ == '__main__':
+    main()

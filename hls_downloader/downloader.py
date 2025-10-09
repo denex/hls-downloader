@@ -6,20 +6,16 @@ import os
 import re
 import sys
 from collections import OrderedDict
-from session import session_factory
+from .session import session_factory
 
 import requests
+# noinspection PyPackageRequirements
 import slugify
 
 if sys.version_info.major == 2:
     import urlparse  # Python 2.x
 else:
     import urllib.parse as urlparse  # Python 3.x
-
-import requests
-
-# noinspection PyPackageRequirements
-import slugify
 
 
 class Downloader:
