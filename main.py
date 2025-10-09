@@ -49,7 +49,11 @@ def download_files_from_playlist(m3u8list):
     if m3u8list.playlists:
         for playlist in m3u8list.playlists:
             if not playlist.absolute_uri.startswith(playlist.base_uri):
-                logging.warning("Base URI changed from %s to %s", playlist.base_uri, playlist.absolute_uri)
+                logging.warning(
+                    "Base URI changed from %s to %s",
+                    playlist.base_uri,
+                    playlist.absolute_uri,
+                )
             process_playlist_by_uri(playlist.absolute_uri)
         return
 
@@ -109,7 +113,11 @@ def process_main_playlist(url_to_m3u8):
     main_list_copy_filename = os.path.join(main_list_dir, "main.m3u8")
     if not os.path.isfile(main_list_copy_filename):
         shutil.copy(main_list_filename, main_list_copy_filename)
-        logging.info("Copied %s -> %s", main_list_filename, os.path.join(main_list_dir, "main.m3u8"))
+        logging.info(
+            "Copied %s -> %s",
+            main_list_filename,
+            os.path.join(main_list_dir, "main.m3u8"),
+        )
 
 
 def main(url_to_m3u8, download_dir, verbose, ignore_ssl):
@@ -131,7 +139,10 @@ def main(url_to_m3u8, download_dir, verbose, ignore_ssl):
         http_settings["verify"] = False
 
     global DOWNLOADER
-    DOWNLOADER = downloader.Downloader(download_dir=download_dir, http_settings=http_settings,)
+    DOWNLOADER = downloader.Downloader(
+        download_dir=download_dir,
+        http_settings=http_settings,
+    )
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
 
     process_main_playlist(url_to_m3u8)
@@ -144,7 +155,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("url_to_m3u8", help="Url to main.m3u8")
     parser.add_argument("download_dir", help="Path to save files")
-    parser.add_argument("--ignore-ssl", default=False, action="store_true", help="Ignore SSL verification")
+    parser.add_argument(
+        "--ignore-ssl",
+        default=False,
+        action="store_true",
+        help="Ignore SSL verification",
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Be more verbose")
     kwargs = vars(parser.parse_args())
     return kwargs

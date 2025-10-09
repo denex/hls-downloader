@@ -89,7 +89,7 @@ class Downloader:
             raise e
         # Write to file
         with open(filename, "wb") as fd:
-            for chunk in resp.iter_content(chunk_size=2 ** 20):
+            for chunk in resp.iter_content(chunk_size=2**20):
                 fd.write(chunk)
 
     def download_one_file(self, absolute_uri):
@@ -124,8 +124,7 @@ class Downloader:
         """Downloads many segments and waits for completion"""
         futures = []
         for segment in segments:
-            future = self._executor.submit(
-                self.download_one_file, segment.absolute_uri)
+            future = self._executor.submit(self.download_one_file, segment.absolute_uri)
             futures.append(future)
 
         for future in futures:

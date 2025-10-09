@@ -38,7 +38,8 @@ def downloader():
 
 
 @pytest.mark.parametrize(
-    ("url", "expected_filename"), [("http://example.com/seq-427.ts", os.path.join(".", "example.com", "seq-427.ts"))]
+    ("url", "expected_filename"),
+    [("http://example.com/seq-427.ts", os.path.join(".", "example.com", "seq-427.ts"))],
 )
 def test__uri_to_filename(url, expected_filename, downloader):
     assert downloader.uri_to_filename(url) == expected_filename

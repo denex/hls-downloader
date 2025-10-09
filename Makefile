@@ -5,7 +5,7 @@ all: format test
 
 .PHONY: format
 format:
-	python3 -m black --line-length=120 --target-version=py27 -v $(SRC)
+	uv format -- --line-length 120 $(SRC)
 
 .PHONY: test
 test: clean
@@ -13,7 +13,7 @@ test: clean
 
 .PHONY: coverage
 coverage:
-	pytest --cov-report=html --cov $(SRC)
+	uv run pytest --cov-report=html --cov $(SRC)
 
 .PHONY: clean
 clean:
