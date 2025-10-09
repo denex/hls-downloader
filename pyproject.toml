@@ -7,7 +7,7 @@ name = "hls-downloader"
 version = "0.1.0"
 description = "Download HLS playlist assets for offline inspection."
 readme = "README.md"
-requires-python = ">=3.8.1"
+requires-python = ">=3.8"
 dependencies = [
     "m3u8>=3.5.0",
     "python-slugify>=8.0.4",
@@ -26,5 +26,4 @@ dev = [
     "pytest-cov>=5.0.0",
     "ruff>=0.6.0",
     "pyyaml>=6.0",
-    "flake8>=6.0",
 ]
