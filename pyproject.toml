@@ -4,21 +4,28 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hls-downloader"
-version = "0.1.0"
-description = "Download HLS playlist assets for offline inspection."
+version = "1.0.1"
+description = "Download all files as is from HLS VoD playlists."
 readme = "README.md"
 requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Denis Averin", email = "ddenex@gmail.com" },
+]
 dependencies = [
     "m3u8>=3.5.0",
     "python-slugify>=8.0.4",
     "requests>=2.32.3",
 ]
 
-[project.scripts]
-hls-downloader = "main:main"
+[project.urls]
+Homepage = "https://github.com/denex/hls-downloader"
 
-[tool.setuptools]
-py-modules = ["main", "downloader", "session"]
+[project.scripts]
+hls-downloader = "hls_downloader.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["hls_downloader*"]
 
 [dependency-groups]
 dev = [

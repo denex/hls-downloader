@@ -18,7 +18,7 @@ else:
 
 import m3u8
 
-import downloader
+from . import downloader
 
 
 class HlsDownloaderException(Exception):
@@ -26,7 +26,6 @@ class HlsDownloaderException(Exception):
 
 
 DOWNLOADER = None  # Instance of downloader.Downloader
-
 DESCRIPTION = defaultdict(list)
 
 
