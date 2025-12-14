@@ -24,6 +24,18 @@ Usage:
 uv run python main.py 'http://some.m3u8' /some/dir/for/files/
 ```
 
+Audio-only (requires `ffmpeg` in `PATH`):
+
+```sh
+uv run python main.py 'http://some.m3u8' /some/dir/for/files/ --audio-only
+```
+
+Optional output path:
+
+```sh
+uv run python main.py 'http://some.m3u8' /some/dir/for/files/ --audio-only --audio-out /tmp/audio.m4a
+```
+
 Known Issues:
 
 * No encryption/decryption supported yet
