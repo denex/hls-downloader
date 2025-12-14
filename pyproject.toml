@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-hls-downloader = "main:main"
+hls-downloader = "main:module_entry_point"
 
 [tool.setuptools]
 py-modules = ["main", "downloader", "session"]
