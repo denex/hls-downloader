@@ -1,3 +1,4 @@
+import hashlib
 import os
 
 import pytest
@@ -45,6 +46,16 @@ def downloader():
     [("http://example.com/seq-427.ts", os.path.join(".", "example.com", "seq-427.ts"))],
 )
 def test__uri_to_filename(url, expected_filename, downloader):
+    assert downloader.uri_to_filename(url) == expected_filename
+
+
+def test__uri_to_filename_truncates_long_path_parts(downloader):
+    long_part = "a" * 300
+    digest = hashlib.sha256(long_part.encode("utf-8")).hexdigest()[:16]
+    expected_part = ("a" * (Downloader.MAX_FILENAME_PART_LENGTH - len(digest) - 1)) + "-" + digest
+
+    url = "http://example.com/%s/file.ts" % long_part
+    expected_filename = os.path.join(".", "example.com", expected_part, "file.ts")
     assert downloader.uri_to_filename(url) == expected_filename
 
 

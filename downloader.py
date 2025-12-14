@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 
 import concurrent.futures
+import hashlib
 import logging
 import os
 import re
@@ -20,8 +21,14 @@ import slugify
 
 
 class Downloader:
+    MAX_FILENAME_PART_LENGTH = 120
+
     @staticmethod
-    def filter_filename_part(string, allowed_pattern=re.compile(r"[^-.@!\w]+", re.IGNORECASE)):
+    def filter_filename_part(
+        string,
+        allowed_pattern=re.compile(r"[^-.@!\w]+", re.IGNORECASE),
+        max_length=MAX_FILENAME_PART_LENGTH,
+    ):
         """
         Replace forbidden filename chars to '_' for string
         :rtype: Text
@@ -29,6 +36,12 @@ class Downloader:
         :param allowed_pattern:
         """
         result = slugify.slugify(string, lowercase=False, regex_pattern=allowed_pattern)
+        if max_length and len(result) > max_length:
+            digest = hashlib.sha256(string.encode("utf-8")).hexdigest()[:16]
+            prefix_len = max_length - len(digest) - 1
+            if prefix_len <= 0:
+                return digest[:max_length]
+            return result[:prefix_len] + "-" + digest
         return result
 
     def __init__(self, download_dir, http_settings=None):
